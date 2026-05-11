@@ -82,9 +82,7 @@ export default function Home() {
             >
               the résumé
               <br />
-              <span className=" decoration-2">
-                the job description
-              </span>
+              <span className=" decoration-2">the job description</span>
               <br />
               asked for.
               <span

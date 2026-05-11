@@ -2,7 +2,8 @@
 
 import { ArrowRight02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 const SPINNER = ["|", "/", "-", "\\"] as const;
@@ -21,68 +22,76 @@ function GoogleMark() {
 export function GoogleButton({ className }: { className?: string }) {
   const [loading, setLoading] = useState(false);
   const [frame, setFrame] = useState(0);
-  const tick = useRef<ReturnType<typeof setInterval> | null>(null);
-  const stop = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    return () => {
-      if (tick.current) clearInterval(tick.current);
-      if (stop.current) clearTimeout(stop.current);
-    };
-  }, []);
-
-  function handleClick() {
+  async function handleClick() {
     if (loading) return;
-    // TODO: wire up Google OAuth — UI placeholder for now.
+
     setLoading(true);
+    setError(false);
     setFrame(0);
-    tick.current = setInterval(() => {
-      setFrame((f) => (f + 1) % SPINNER.length);
+
+    const spinner = window.setInterval(() => {
+      setFrame((current) => (current + 1) % SPINNER.length);
     }, 90);
-    stop.current = setTimeout(() => {
-      if (tick.current) clearInterval(tick.current);
-      tick.current = null;
-      stop.current = null;
+
+    const supabase = createClient();
+    const { error: signInError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (signInError) {
+      window.clearInterval(spinner);
       setLoading(false);
-    }, 2000);
+      setError(true);
+    }
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={loading}
-      aria-busy={loading}
-      className={cn(
-        "group flex w-full items-center gap-2.5 border border-border bg-transparent px-4 py-4 sm:gap-3 sm:px-5",
-        "font-mono text-xs uppercase tracking-[0.14em] text-foreground",
-        "transition-colors duration-150 ease-out",
-        "hover:border-foreground hover:bg-foreground hover:text-background",
-        "focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-        "active:translate-y-px disabled:cursor-wait",
-        className,
-      )}
-    >
-      <span
-        aria-hidden="true"
-        className="flex size-4 shrink-0 items-center justify-center"
-      >
-        {loading ? (
-          <span className="text-sm leading-none">{SPINNER[frame]}</span>
-        ) : (
-          <GoogleMark />
+    <div className={className}>
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={loading}
+        aria-busy={loading}
+        className={cn(
+          "group flex w-full items-center gap-2.5 border border-border bg-transparent px-4 py-4 sm:gap-3 sm:px-5",
+          "font-mono text-xs uppercase tracking-[0.14em] text-foreground",
+          "transition-colors duration-150 ease-out",
+          "hover:border-foreground hover:bg-foreground hover:text-background",
+          "focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+          "active:translate-y-px disabled:cursor-wait",
         )}
-      </span>
-      <span className="flex-1 text-left">
-        {loading ? "connecting" : "continue with google"}
-      </span>
-      <HugeiconsIcon
-        icon={ArrowRight02Icon}
-        size={16}
-        strokeWidth={2}
-        aria-hidden={true}
-        className="shrink-0 transition-transform duration-150 ease-out group-hover:translate-x-1"
-      />
-    </button>
+      >
+        <span
+          aria-hidden="true"
+          className="flex size-4 shrink-0 items-center justify-center"
+        >
+          {loading ? (
+            <span className="text-sm leading-none">{SPINNER[frame]}</span>
+          ) : (
+            <GoogleMark />
+          )}
+        </span>
+        <span className="flex-1 text-left">
+          {loading ? "connecting" : "continue with google"}
+        </span>
+        <HugeiconsIcon
+          icon={ArrowRight02Icon}
+          size={16}
+          strokeWidth={2}
+          aria-hidden={true}
+          className="shrink-0 transition-transform duration-150 ease-out group-hover:translate-x-1"
+        />
+      </button>
+      {error ? (
+        <p className="mt-3 text-[0.65rem] leading-relaxed text-destructive">
+          Could not start Google sign-in. Try again.
+        </p>
+      ) : null}
+    </div>
   );
 }
