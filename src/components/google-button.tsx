@@ -1,5 +1,7 @@
 "use client";
 
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -74,12 +76,13 @@ export function GoogleButton({ className }: { className?: string }) {
       <span className="flex-1 text-left">
         {loading ? "connecting" : "continue with google"}
       </span>
-      <span
-        aria-hidden="true"
-        className="transition-transform duration-150 ease-out group-hover:translate-x-1"
-      >
-        →
-      </span>
+      <HugeiconsIcon
+        icon={ArrowRight01Icon}
+        size={16}
+        strokeWidth={2}
+        aria-hidden={true}
+        className="shrink-0 transition-transform duration-150 ease-out group-hover:translate-x-1"
+      />
     </button>
   );
 }
