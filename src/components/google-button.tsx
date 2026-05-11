@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { ArrowRight02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -77,7 +77,7 @@ export function GoogleButton({ className }: { className?: string }) {
         {loading ? "connecting" : "continue with google"}
       </span>
       <HugeiconsIcon
-        icon={ArrowRight01Icon}
+        icon={ArrowRight02Icon}
         size={16}
         strokeWidth={2}
         aria-hidden={true}
